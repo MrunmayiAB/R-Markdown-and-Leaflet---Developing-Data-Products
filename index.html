@@ -1,0 +1,50 @@
+
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predicting Barbell Lift Quality - Mrunmayi A Bhave</title>
+<style>
+body { max-width: 940px; margin: 2.4rem auto; padding: 0 1.4rem; font: 16px/1.58 Arial, sans-serif; color: #253449; }
+h1, h2 { color: #164d69; line-height: 1.2; }
+h1 { margin-bottom: .2rem; } h2 { margin-top: 1.8rem; border-bottom: 1px solid #c8d8e1; padding-bottom: .3rem; }
+.byline, .note { color: #586b7c; } .callout { background: #eef6f7; border-left: 4px solid #31818c; padding: .8rem 1rem; }
+table { border-collapse: collapse; margin: .8rem 0 1.2rem; width: auto; min-width: 55%; }
+th, td { border: 1px solid #c7d4dc; padding: .38rem .65rem; text-align: right; }
+th { background: #e8f0f4; color: #164d69; } th:first-child, td:first-child { text-align: left; }
+code { background: #f1f3f5; padding: .1rem .25rem; } a { color: #176a87; }
+</style>
+</head>
+<body>
+<h1>Predicting Barbell Lift Quality</h1>
+<p class="byline">Mrunmayi A Bhave | Practical Machine Learning course project</p>
+
+<h2>Goal and data</h2>
+<p>Accelerometer measurements from the belt, forearm, arm, and dumbbell are used to classify how each exercise was performed. The target <code>classe</code> has five categories: A through E. The supplied training data contain 19622 labeled observations. The separate quiz file contains 20 unlabeled cases.</p>
+<p>The outcome classes are imbalanced, so validation folds were stratified. Rows and columns identifying a participant, timestamp, window, or record number were excluded to avoid relying on administrative identifiers. I retained 52 numeric sensor features that vary and have no more than 10% missing values. The selected predictors had no remaining missing values in these data.</p>
+
+<h3>Class distribution</h3>
+<table><thead><tr><th>Classe</th><th>Training rows</th><th>Share</th></tr></thead><tbody><tr><td>A</td><td>5580</td><td>28.4%</td></tr><tr><td>B</td><td>3797</td><td>19.4%</td></tr><tr><td>C</td><td>3422</td><td>17.4%</td></tr><tr><td>D</td><td>3216</td><td>16.4%</td></tr><tr><td>E</td><td>3607</td><td>18.4%</td></tr></tbody></table>
+
+<h2>Model and validation</h2>
+<p>I used a random forest classifier. Each forest combines many classification trees fitted to bootstrap samples; at each split it considers a random subset of predictors. The default square-root rule gives <code>mtry = 7</code>. I used 250 trees per validation fit and 500 trees for the final model to stabilize predictions. Participant and time fields were omitted because they describe data collection rather than movement quality.</p>
+<p>To estimate generalization error, I assigned observations within each class to five folds, trained on four folds, and predicted the held-out fold. Each labeled observation received one out-of-fold prediction. The pooled error is the fraction of all out-of-fold predictions that are incorrect.</p>
+<div class="callout"><strong>Five-fold cross-validation accuracy:</strong> 99.577%<br><strong>Estimated out-of-sample error:</strong> 0.423%</div>
+
+<h3>Fold results</h3>
+<table><thead><tr><th>Fold</th><th>Held-out rows</th><th>Accuracy</th><th>Error</th></tr></thead><tbody><tr><td>1</td><td>3927</td><td>99.694%</td><td>0.306%</td></tr><tr><td>2</td><td>3926</td><td>99.440%</td><td>0.560%</td></tr><tr><td>3</td><td>3923</td><td>99.541%</td><td>0.459%</td></tr><tr><td>4</td><td>3923</td><td>99.643%</td><td>0.357%</td></tr><tr><td>5</td><td>3923</td><td>99.567%</td><td>0.433%</td></tr><tr><th>Overall</th><th>19622</th><th>99.577%</th><th>0.423%</th></tr></tbody></table>
+
+<p>The cross-validation estimate is expected to approximate error on new records drawn under the same data-collection conditions. It may be optimistic if future records differ from these participants or sessions. The fold-to-fold variation also reflects the finite sample and random forest randomness.</p>
+
+<h2>Out-of-fold confusion matrix</h2>
+<table><thead><tr><th>Actual \ Predicted</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead><tbody><tr><th>A</th><td>5575</td><td>3</td><td>1</td><td>0</td><td>1</td></tr><tr><th>B</th><td>18</td><td>3771</td><td>8</td><td>0</td><td>0</td></tr><tr><th>C</th><td>0</td><td>17</td><td>3403</td><td>2</td><td>0</td></tr><tr><th>D</th><td>0</td><td>0</td><td>23</td><td>3191</td><td>2</td></tr><tr><th>E</th><td>0</td><td>0</td><td>3</td><td>5</td><td>3599</td></tr></tbody></table>
+
+<h2>Quiz predictions and reproducibility</h2>
+<p>After validation, I fit the same model settings to all labeled training rows and predicted the 20 quiz cases in their supplied order. The predictions are in <code>quiz_predictions.txt</code> (one class per line) and <code>quiz_predictions.csv</code> (numbered rows).</p>
+<p>To reproduce the model and predictions, run <code>Rscript analysis.R</code> from the project directory. The script fixes the random seed, performs the stratified cross-validation, fits the final forest, and writes the prediction files and model results. The report source is <code>model_report.Rmd</code>.</p>
+<p class="note">Data source: Groupware at PUC-Rio, Weight Lifting Exercise Dataset, <a href="http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/harsvg">project dataset page</a>. The data were generously made available for this course assignment.</p>
+</body>
+</html>
+
